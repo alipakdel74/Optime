@@ -205,9 +205,6 @@ class LocationUpdatesService : Service() {
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
         }
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
         val channelId = getString(R.string.default_notification_channel_id)
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
@@ -224,7 +221,21 @@ class LocationUpdatesService : Service() {
                     ).build()
                 }
             )
-        notificationManager.notify(1, notificationBuilder.build())
+
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                "Channel human readable title",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                setShowBadge(true)
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+        notificationManager.notify(1 /* ID of notification */, notificationBuilder.build())
     }
 
     companion object {
