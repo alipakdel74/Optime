@@ -1,8 +1,10 @@
 package com.example.myapplication.ui.activity
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.*
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
@@ -40,16 +42,32 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        EzPermission.with(this)
-            .permissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
-            .request { granted, _, _ ->
-                if (granted.isNotEmpty()) {
-                    if (getLocationMode() == 3)
-                        initializeService()
-                    else
-                        showAlertDialog(this@MainActivity)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            EzPermission.with(this)
+                .permissions(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+                .request { granted, _, _ ->
+                    if (granted.isNotEmpty()) {
+                        if (getLocationMode() == 3)
+                            initializeService()
+                        else
+                            showAlertDialog(this@MainActivity)
+                    }
                 }
-            }
+        } else {
+            EzPermission.with(this)
+                .permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                .request { granted, _, _ ->
+                    if (granted.isNotEmpty()) {
+                        if (getLocationMode() == 3)
+                            initializeService()
+                        else
+                            showAlertDialog(this@MainActivity)
+                    }
+                }
+        }
 
         setContent {
             MyApplicationTheme {
